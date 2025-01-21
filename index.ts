@@ -1,5 +1,5 @@
 import VMModule from 'vm2';
-const { VM } = VMModule;
+const { NodeVM } = VMModule;
 
 
 import { Resend } from "resend"
@@ -8,9 +8,10 @@ import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-
 import { DeleteScheduleCommand } from "@aws-sdk/client-scheduler"
 import { createClient } from "@supabase/supabase-js"
 
+import mimemessage from "mimemessage";
+import iconv from "iconv-lite";
 
-import simpleParserModule from 'mailparser';
-const { simpleParser } = simpleParserModule;
+
 
 import { nanoid } from 'nanoid';
 import crypto from "crypto"
@@ -18,27 +19,9 @@ import crypto from "crypto"
 
 
 
-// Define the type for the event
-interface Event {
-  dateTime: string;
-  message: string;
-  channel: string;
-  sendNotificationTo: string;
-  inputNotificationTo: string;
-}
-
-type EventKeys = keyof Event;
 
 
 
-function validateEvent(event: Event): void {
-  const requiredFields: EventKeys[] = ['dateTime', 'message', 'sendNotificationTo'];
-  for (const field of requiredFields) {
-    if (!event[field]) {
-      throw new Error(`Missing required field: ${field}`);
-    }
-  }
-}
 
 
 
@@ -77,9 +60,6 @@ export const handler = async (event: Event) => {
 
 
 
-  validateEvent(event);
-
-
   const imports = {
     Resend,
     Redis,
@@ -88,7 +68,8 @@ export const handler = async (event: Event) => {
     S3Client,
     DeleteScheduleCommand,
     createClient,
-    simpleParser,
+    mimemessage,
+    iconv,
     nanoid,
     crypto,
 };
@@ -119,8 +100,9 @@ if (!response.ok) {
 
 const responseData = await response.json();
 
-const vm = new VM({
+const vm = new NodeVM({
   timeout: 25000, // 25 seconds to prevent Lambda timeout
+  compiler:'javascript',
   sandbox: {
     process: {
       env: {
@@ -153,27 +135,33 @@ try {
   .replace("};", ''); // Remove only the last closing `};`
 
 
-  const wrappedCode = `  
-   const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
+   const wrappedCode = `
+  const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, mimemessage, iconv, nanoid, crypto } = imports;
 
   (async () => {
-    ${transformedCode}
-    })().then(result => result).catch(err => ({ statusCode: 500, body: JSON.stringify({ error: 'Failed to execute the VM2 code', details: err.message }) }));
-    `;
-    
+    try {
+      ${transformedCode}
+    } catch (err) {
+      console.log("Error during execution:", err);
+      throw new Error('Failed to execute the VM2 code: ' + err.message);  // Throwing the error for .catch to catch it
+    }
+  })()
+  .then(result => ({ statusCode: 200, body: JSON.stringify(result) }))
+  .catch(err => ({ statusCode: 500, body: JSON.stringify({ error: 'Failed to execute the VM2 code', details: err.message }) }));
+  `;
  
 
 
   // Execute the wrapped code in the VM
-  const result = await vm.run(wrappedCode);
+  // const result = await vm.run(wrappedCode);
 
   return {
     statusCode: 200,
-    body: JSON.stringify(result),
+    body: JSON.stringify('result'),
   };
 } catch (error) {
   const errorMessage: string = (error as Error)?.message || 'An unexpected error occurred';
-  console.error('Error executing code in VM:', errorMessage);
+  console.error(163,'Error executing code in VM:', errorMessage);
   return {
     statusCode: 500,
     body: JSON.stringify({

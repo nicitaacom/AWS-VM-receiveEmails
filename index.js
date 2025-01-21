@@ -5,24 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handler = void 0;
 const vm2_1 = __importDefault(require("vm2"));
-const { VM } = vm2_1.default;
+const { NodeVM } = vm2_1.default;
 const resend_1 = require("resend");
 const ioredis_1 = require("ioredis");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const client_scheduler_1 = require("@aws-sdk/client-scheduler");
 const supabase_js_1 = require("@supabase/supabase-js");
-const mailparser_1 = __importDefault(require("mailparser"));
-const { simpleParser } = mailparser_1.default;
+const mimemessage_1 = __importDefault(require("mimemessage"));
+const iconv_lite_1 = __importDefault(require("iconv-lite"));
 const nanoid_1 = require("nanoid");
 const crypto_1 = __importDefault(require("crypto"));
-function validateEvent(event) {
-    const requiredFields = ['dateTime', 'message', 'sendNotificationTo'];
-    for (const field of requiredFields) {
-        if (!event[field]) {
-            throw new Error(`Missing required field: ${field}`);
-        }
-    }
-}
 const handler = async (event) => {
     const requiredEnvVariables = [
         "SEND_EMAILS_TO",
@@ -49,7 +41,6 @@ const handler = async (event) => {
             };
         }
     });
-    validateEvent(event);
     const imports = {
         Resend: resend_1.Resend,
         Redis: ioredis_1.Redis,
@@ -58,7 +49,8 @@ const handler = async (event) => {
         S3Client: client_s3_1.S3Client,
         DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand,
         createClient: supabase_js_1.createClient,
-        simpleParser,
+        mimemessage: mimemessage_1.default,
+        iconv: iconv_lite_1.default,
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
     };
@@ -75,8 +67,9 @@ const handler = async (event) => {
         throw new Error(`Error ${response.status}: ${errorMessage || "Unknown error"}`);
     }
     const responseData = await response.json();
-    const vm = new VM({
+    const vm = new NodeVM({
         timeout: 25000,
+        compiler: 'javascript',
         sandbox: {
             process: {
                 env: {
@@ -105,23 +98,30 @@ const handler = async (event) => {
             // Remove the export handler function line, adjusting to potentially varying spaces
             .replace("export const handler = async (event) => {", '') // Remove handler definition line
             .replace("};", ''); // Remove only the last closing `};`
-        const wrappedCode = `  
-   const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
+        const wrappedCode = `
+  const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, mimemessage, iconv, nanoid, crypto } = imports;
 
   (async () => {
-    ${transformedCode}
-    })().then(result => result).catch(err => ({ statusCode: 500, body: JSON.stringify({ error: 'Failed to execute the VM2 code', details: err.message }) }));
-    `;
+    try {
+      ${transformedCode}
+    } catch (err) {
+      console.log("Error during execution:", err);
+      throw new Error('Failed to execute the VM2 code: ' + err.message);  // Throwing the error for .catch to catch it
+    }
+  })()
+  .then(result => ({ statusCode: 200, body: JSON.stringify(result) }))
+  .catch(err => ({ statusCode: 500, body: JSON.stringify({ error: 'Failed to execute the VM2 code', details: err.message }) }));
+  `;
         // Execute the wrapped code in the VM
-        const result = await vm.run(wrappedCode);
+        // const result = await vm.run(wrappedCode);
         return {
             statusCode: 200,
-            body: JSON.stringify(result),
+            body: JSON.stringify('result'),
         };
     }
     catch (error) {
         const errorMessage = error?.message || 'An unexpected error occurred';
-        console.error('Error executing code in VM:', errorMessage);
+        console.error(163, 'Error executing code in VM:', errorMessage);
         return {
             statusCode: 500,
             body: JSON.stringify({

@@ -5,6 +5,7 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "rootDir": "./",
+    "typeRoots": ["./node_modules/@types", "./types.d.ts"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true
