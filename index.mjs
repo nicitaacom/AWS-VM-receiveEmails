@@ -2,7 +2,7 @@ import { VM } from "vm2";
 import { Resend } from "resend";
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { DeleteScheduleCommand } from "@aws-sdk/client-scheduler";
+import { SchedulerClient,DeleteScheduleCommand } from "@aws-sdk/client-scheduler";
 import { createClient } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
 import crypto from "crypto";
@@ -39,8 +39,9 @@ export const handler = async (event) => {
     Redis,
     GetObjectCommand,
     DeleteObjectCommand,
-    S3Client,
     DeleteScheduleCommand,
+    SchedulerClient,
+    S3Client,
     createClient,
     nanoid,
     simpleParser,
@@ -74,8 +75,9 @@ const wrappedCode = `
     Redis,
     GetObjectCommand,
     DeleteObjectCommand,
-    S3Client,
     DeleteScheduleCommand,
+    S3Client,
+    SchedulerClient,
     createClient,
     nanoid,
     crypto,
@@ -85,11 +87,17 @@ const wrappedCode = `
   (async () => {
     try {
       console.log("Executing handler logic...");
-      await (async () => { 
+      const result = await (async () => { 
         ${transformedCode} 
-      })(); // Await the execution of tempCode
-      console.log("Handler logic executed successfully.");
-      return { success: true }; // Return a success object
+      })();
+
+      if (result.statusCode >= 400) {
+        console.error("Handler returned an error:", result);
+        throw new Error(JSON.stringify(result));
+      }
+
+      console.log("Handler logic executed successfully:", result);
+      return result;
     } catch (err) {
       console.error("Error during execution:", err);
       throw err;
@@ -112,11 +120,23 @@ const wrappedCode = `
   });
 
   try {
-    const result = await vm.run(wrappedCode);
-    console.log("VM execution successful:", result);
-    return { statusCode: 200, body: JSON.stringify(result) };
+  const result = await vm.run(wrappedCode);
+  if (result.statusCode >= 400) {
+    // Handle errors: Fix newline formatting for better readability
+    const formattedErrorBody = result.body.replace(/\\n/g, "\n").replace(/\\/g, '').replace(/\\/g, '');
+
+    console.error(126,"Error in wrapped code execution:", formattedErrorBody);
+
+    return {
+      statusCode: result.statusCode,
+      body: formattedErrorBody, // Return the error body with proper newlines
+    };
+  }
+
+  console.log(134,"VM execution successful:\n", result);
   } catch (error) {
-    console.error("Error executing code in VM:", error.message);
-    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+    const errorMessage = error.message.replace(/\\n/g, "\n").replace(/\\/g, '').replace(/\\/g, '')
+    console.error("Error executing code in VM: ",errorMessage );
+    return { statusCode: 500, body: errorMessage };
   }
 };
