@@ -16,6 +16,8 @@ const { simpleParser } = mailparser_1.default;
 const nanoid_1 = require("nanoid");
 const crypto_1 = __importDefault(require("crypto"));
 const handler = async (event) => {
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
     const imports = {
         Resend: resend_1.Resend,
         Redis: ioredis_1.Redis,
@@ -28,6 +30,8 @@ const handler = async (event) => {
         simpleParser,
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
+        encoder,
+        decoder
     };
     const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -60,7 +64,20 @@ const handler = async (event) => {
             .replace("export const handler = async (event) => {", '') // Remove handler definition line
             .replace("};", ''); // Remove only the last closing `};`
         const wrappedCode = `  
-    const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
+    const { 
+    Resend,
+    Redis,
+    GetObjectCommand,
+    DeleteObjectCommand,
+    S3Client,
+    DeleteScheduleCommand,
+    SchedulerClient,
+    createClient,
+    simpleParser,
+    nanoid,
+    crypto,
+    encoder,
+    decoder} = imports;
 
     (async () => {
       try {

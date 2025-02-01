@@ -26,7 +26,8 @@ import crypto from "crypto"
 export const handler = async (event: Event) => {
 
 
-
+  const encoder = new TextEncoder()
+  const decoder = new TextDecoder()
 
   const imports = {
     Resend,
@@ -40,6 +41,8 @@ export const handler = async (event: Event) => {
     simpleParser,
     nanoid,
     crypto,
+    encoder,
+    decoder
 };
 
 
@@ -67,6 +70,7 @@ if (!response.ok) {
 
 const responseData = await response.json();
 
+
 const vm = new VM({
   timeout: 25000, // 25 seconds to prevent Lambda timeout
   sandbox: {
@@ -88,8 +92,23 @@ try {
   .replace("};", ''); // Remove only the last closing `};`
 
 
+
+
   const wrappedCode = `  
-    const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
+    const { 
+    Resend,
+    Redis,
+    GetObjectCommand,
+    DeleteObjectCommand,
+    S3Client,
+    DeleteScheduleCommand,
+    SchedulerClient,
+    createClient,
+    simpleParser,
+    nanoid,
+    crypto,
+    encoder,
+    decoder} = imports;
 
     (async () => {
       try {
