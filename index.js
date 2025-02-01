@@ -16,6 +16,12 @@ const { simpleParser } = mailparser_1.default;
 const nanoid_1 = require("nanoid");
 const crypto_1 = __importDefault(require("crypto"));
 const handler = async (event) => {
+    if (!process.env.NEXT_PUBLIC_PRODUCTION_URL || !process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
+        return {
+            statusCode: 400,
+            error: 'NEXT_PUBLIC_PRODUCTION_URL or NEXT_PUBLIC_PRODUCTION_AUTH_URL missing',
+        };
+    }
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     const imports = {

@@ -25,6 +25,14 @@ import crypto from "crypto"
 
 export const handler = async (event: Event) => {
 
+  if (!process.env.NEXT_PUBLIC_PRODUCTION_URL || !process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
+   return {
+    statusCode: 400,
+    error: 'NEXT_PUBLIC_PRODUCTION_URL or NEXT_PUBLIC_PRODUCTION_AUTH_URL missing',
+  } 
+}
+
+
 
   const encoder = new TextEncoder()
   const decoder = new TextDecoder()
