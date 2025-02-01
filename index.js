@@ -15,41 +15,7 @@ const mailparser_1 = __importDefault(require("mailparser"));
 const { simpleParser } = mailparser_1.default;
 const nanoid_1 = require("nanoid");
 const crypto_1 = __importDefault(require("crypto"));
-function validateEvent(event) {
-    const requiredFields = ['dateTime', 'message', 'sendNotificationTo'];
-    for (const field of requiredFields) {
-        if (!event[field]) {
-            throw new Error(`Missing required field: ${field}`);
-        }
-    }
-}
 const handler = async (event) => {
-    const requiredEnvVariables = [
-        "SEND_EMAILS_TO",
-        "REGION",
-        "ACCESS_KEY_ID",
-        "SECRET_ACCESS_KEY",
-        "NEXT_PUBLIC_SUPABASE_URL",
-        "SUPABASE_SERVICE_ROLE_KEY",
-        "TELEGRAM_BOT_TOKEN",
-        "TELEGRAM_CHAT_ID",
-        "UPSTASH_REDIS_URL",
-        "USER_ID",
-        'NEXT_PUBLIC_PRODUCTION_URL',
-        'NEXT_PUBLIC_PRODUCTION_AUTH_URL',
-    ];
-    // 1. Validate envs
-    requiredEnvVariables.forEach((variable) => {
-        if (!process.env[variable]) {
-            const errorMessage = `no ${variable} - check your envs in AWS Lambda receiveEmails Configuration Environment variables`;
-            console.log(94, errorMessage);
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: errorMessage }),
-            };
-        }
-    });
-    validateEvent(event);
     const imports = {
         Resend: resend_1.Resend,
         Redis: ioredis_1.Redis,
@@ -57,12 +23,13 @@ const handler = async (event) => {
         DeleteObjectCommand: client_s3_1.DeleteObjectCommand,
         S3Client: client_s3_1.S3Client,
         DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand,
+        SchedulerClient: client_scheduler_1.SchedulerClient,
         createClient: supabase_js_1.createClient,
         simpleParser,
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
     };
-    const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/receiveEmails`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -79,20 +46,7 @@ const handler = async (event) => {
         timeout: 25000,
         sandbox: {
             process: {
-                env: {
-                    SEND_EMAILS_TO: process.env.SEND_EMAILS_TO,
-                    TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
-                    REGION: process.env.REGION,
-                    ACCESS_KEY_ID: process.env.ACCESS_KEY_ID,
-                    SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
-                    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-                    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-                    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
-                    UPSTASH_REDIS_URL: process.env.UPSTASH_REDIS_URL,
-                    USER_ID: process.env.USER_ID,
-                    NEXT_PUBLIC_PRODUCTION_URL: process.env.NEXT_PUBLIC_PRODUCTION_URL,
-                    NEXT_PUBLIC_PRODUCTION_AUTH_URL: process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL
-                },
+                env: { ...process.env },
             },
             fetch,
             event,
@@ -106,14 +60,27 @@ const handler = async (event) => {
             .replace("export const handler = async (event) => {", '') // Remove handler definition line
             .replace("};", ''); // Remove only the last closing `};`
         const wrappedCode = `  
-   const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
+    const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
 
-  (async () => {
-    ${transformedCode}
-    })().then(result => result).catch(err => ({ statusCode: 500, body: JSON.stringify({ error: 'Failed to execute the VM2 code', details: err.message }) }));
-    `;
+    (async () => {
+      try {
+        const result = await (async () => { 
+          ${transformedCode} 
+        })();
+
+        if (result?.statusCode !== 200) {
+          throw new Error(result.body);
+        }
+
+        return result;
+      } catch (error) {
+        return { statusCode: 400, body: error.message };
+      }
+    })();
+  `;
         // Execute the wrapped code in the VM
         const result = await vm.run(wrappedCode);
+        console.log(117, 'returned result - ', result);
         return {
             statusCode: 200,
             body: JSON.stringify(result),
@@ -121,7 +88,7 @@ const handler = async (event) => {
     }
     catch (error) {
         const errorMessage = error?.message || 'An unexpected error occurred';
-        console.error('Error executing code in VM:', errorMessage);
+        console.error(124, 'Error executing code in VM:', errorMessage);
         return {
             statusCode: 500,
             body: JSON.stringify({

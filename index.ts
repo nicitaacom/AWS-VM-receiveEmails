@@ -5,7 +5,7 @@ const { VM } = VMModule;
 import { Resend } from "resend"
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
-import { DeleteScheduleCommand } from "@aws-sdk/client-scheduler"
+import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
 import { createClient } from "@supabase/supabase-js"
 
 
@@ -18,27 +18,7 @@ import crypto from "crypto"
 
 
 
-// Define the type for the event
-interface Event {
-  dateTime: string;
-  message: string;
-  channel: string;
-  sendNotificationTo: string;
-  inputNotificationTo: string;
-}
 
-type EventKeys = keyof Event;
-
-
-
-function validateEvent(event: Event): void {
-  const requiredFields: EventKeys[] = ['dateTime', 'message', 'sendNotificationTo'];
-  for (const field of requiredFields) {
-    if (!event[field]) {
-      throw new Error(`Missing required field: ${field}`);
-    }
-  }
-}
 
 
 
@@ -46,38 +26,6 @@ function validateEvent(event: Event): void {
 export const handler = async (event: Event) => {
 
 
-    const requiredEnvVariables = [
-    "SEND_EMAILS_TO",
-    "REGION",
-    "ACCESS_KEY_ID",
-    "SECRET_ACCESS_KEY",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_CHAT_ID",
-    "UPSTASH_REDIS_URL",
-    "USER_ID",
-    'NEXT_PUBLIC_PRODUCTION_URL',
-    'NEXT_PUBLIC_PRODUCTION_AUTH_URL',
-  ];
- 
-  // 1. Validate envs
-  requiredEnvVariables.forEach((variable) => {
-    if (!process.env[variable]) {
-    const errorMessage = `no ${variable} - check your envs in AWS Lambda receiveEmails Configuration Environment variables`;
-    console.log(94,errorMessage)
-     return {
-      statusCode: 400,
-      body: JSON.stringify({ error: errorMessage }),
-    };
-    }
-  });
-
-
-
-
-
-  validateEvent(event);
 
 
   const imports = {
@@ -87,6 +35,7 @@ export const handler = async (event: Event) => {
     DeleteObjectCommand,
     S3Client,
     DeleteScheduleCommand,
+    SchedulerClient,
     createClient,
     simpleParser,
     nanoid,
@@ -102,8 +51,7 @@ export const handler = async (event: Event) => {
 
 
 
-
-const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/receiveEmails`, {
+const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -123,20 +71,7 @@ const vm = new VM({
   timeout: 25000, // 25 seconds to prevent Lambda timeout
   sandbox: {
     process: {
-      env: {
-        SEND_EMAILS_TO: process.env.SEND_EMAILS_TO,
-        TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID,
-        REGION: process.env.REGION,
-        ACCESS_KEY_ID: process.env.ACCESS_KEY_ID,
-        SECRET_ACCESS_KEY: process.env.SECRET_ACCESS_KEY,
-        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-        TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
-        UPSTASH_REDIS_URL: process.env.UPSTASH_REDIS_URL,
-        USER_ID: process.env.USER_ID,
-        NEXT_PUBLIC_PRODUCTION_URL: process.env.NEXT_PUBLIC_PRODUCTION_URL,
-        NEXT_PUBLIC_PRODUCTION_AUTH_URL: process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL
-      },
+      env: { ...process.env },
     },
     fetch, // Pass fetch to the sandbox
     event, // Pass the event to the VM sandbox
@@ -154,26 +89,39 @@ try {
 
 
   const wrappedCode = `  
-   const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
+    const { Resend, Redis, GetObjectCommand, DeleteObjectCommand, S3Client, DeleteScheduleCommand, createClient, simpleParser, nanoid, crypto } = imports;
 
-  (async () => {
-    ${transformedCode}
-    })().then(result => result).catch(err => ({ statusCode: 500, body: JSON.stringify({ error: 'Failed to execute the VM2 code', details: err.message }) }));
-    `;
-    
- 
+    (async () => {
+      try {
+        const result = await (async () => { 
+          ${transformedCode} 
+        })();
+
+        if (result?.statusCode !== 200) {
+          throw new Error(result.body);
+        }
+
+        return result;
+      } catch (error) {
+        return { statusCode: 400, body: error.message };
+      }
+    })();
+  `;
+      
+  
 
 
   // Execute the wrapped code in the VM
   const result = await vm.run(wrappedCode);
 
+  console.log(117,'returned result - ',result)
   return {
     statusCode: 200,
     body: JSON.stringify(result),
   };
 } catch (error) {
   const errorMessage: string = (error as Error)?.message || 'An unexpected error occurred';
-  console.error('Error executing code in VM:', errorMessage);
+  console.error(124,'Error executing code in VM:', errorMessage);
   return {
     statusCode: 500,
     body: JSON.stringify({
