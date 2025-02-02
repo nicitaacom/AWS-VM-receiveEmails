@@ -103,7 +103,10 @@ const handler = async (event) => {
   `;
         // Execute the wrapped code in the VM
         const result = await vm.run(wrappedCode);
-        console.log(117, 'returned result - ', result);
+        if (result?.statusCode !== 200) {
+            const cleanedError = result.body.replace(/\\n/g, "\n").replace(/\\/g, '').replace(/\\/g, '');
+            throw new Error(cleanedError);
+        }
         return {
             statusCode: 200,
             body: JSON.stringify(result),
