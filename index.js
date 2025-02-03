@@ -13,6 +13,7 @@ const client_scheduler_1 = require("@aws-sdk/client-scheduler");
 const supabase_js_1 = require("@supabase/supabase-js");
 const mailparser_1 = __importDefault(require("mailparser"));
 const { simpleParser } = mailparser_1.default;
+const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const nanoid_1 = require("nanoid");
 const crypto_1 = __importDefault(require("crypto"));
 const handler = async (event) => {
@@ -36,6 +37,7 @@ const handler = async (event) => {
         simpleParser,
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
+        moment: moment_timezone_1.default,
         encoder,
         decoder
     };
@@ -82,6 +84,7 @@ const handler = async (event) => {
     simpleParser,
     nanoid,
     crypto,
+    moment,
     encoder,
     decoder} = imports;
 
