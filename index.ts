@@ -12,6 +12,7 @@ import { createClient } from "@supabase/supabase-js"
 import simpleParserModule from 'mailparser';
 const { simpleParser } = simpleParserModule;
 
+import moment from "moment-timezone"
 import { nanoid } from 'nanoid';
 import crypto from "crypto"
 
@@ -49,6 +50,7 @@ export const handler = async (event: Event) => {
     simpleParser,
     nanoid,
     crypto,
+    moment,
     encoder,
     decoder
 };
@@ -115,6 +117,7 @@ try {
     simpleParser,
     nanoid,
     crypto,
+    moment,
     encoder,
     decoder} = imports;
 
