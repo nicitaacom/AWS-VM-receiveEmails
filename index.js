@@ -116,13 +116,18 @@ const handler = async (event) => {
         };
     }
     catch (error) {
-        const errorMessage = error?.message || 'An unexpected error occurred';
-        console.error(124, 'Error executing code in VM:', errorMessage);
+        const message = (error instanceof Error && typeof error.message === 'string')
+            ? error.message
+            : JSON.stringify(error);
+        const cleanErrorMessage = message
+            .replace(/\\n/g, "\n") // Replace \\n with newline character
+            .replace(/\\/g, '') // Remove backslashes
+            .trim(); // Remove leading and trailing whitespace
         return {
             statusCode: 500,
             body: JSON.stringify({
                 error: 'Failed to execute the code',
-                details: errorMessage,
+                details: cleanErrorMessage,
             }),
         };
     }
