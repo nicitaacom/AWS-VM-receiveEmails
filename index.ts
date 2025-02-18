@@ -16,6 +16,7 @@ const { simpleParser } = simpleParserModule;
 import moment from "moment-timezone"
 import { nanoid } from 'nanoid';
 import { Buffer } from "buffer"
+import { URLSearchParams } from "url"
 import crypto from "crypto"
 
 
@@ -55,7 +56,8 @@ export const handler = async (event: Event) => {
     moment,
     encoder,
     decoder,
-    Buffer // required for twilio Authorization token
+    Buffer, // required for twilio Authorization token
+    URLSearchParams,
 };
 
 
@@ -123,7 +125,8 @@ try {
     moment,
     encoder,
     decoder,
-    Buffer} = imports;
+    Buffer,
+    URLSearchParams} = imports;
 
     (async () => {
       try {

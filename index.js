@@ -16,6 +16,7 @@ const { simpleParser } = mailparser_1.default;
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const nanoid_1 = require("nanoid");
 const buffer_1 = require("buffer");
+const url_1 = require("url");
 const crypto_1 = __importDefault(require("crypto"));
 const handler = async (event) => {
     if (!process.env.NEXT_PUBLIC_PRODUCTION_URL || !process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
@@ -41,7 +42,9 @@ const handler = async (event) => {
         moment: moment_timezone_1.default,
         encoder,
         decoder,
-        Buffer: buffer_1.Buffer // required for twilio Authorization token
+        Buffer: buffer_1.Buffer,
+        URLSearchParams: // required for twilio Authorization token
+        url_1.URLSearchParams,
     };
     const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -89,7 +92,8 @@ const handler = async (event) => {
     moment,
     encoder,
     decoder,
-    Buffer} = imports;
+    Buffer,
+    URLSearchParams} = imports;
 
     (async () => {
       try {
