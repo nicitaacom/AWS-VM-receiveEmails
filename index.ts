@@ -2,6 +2,7 @@ import VMModule from 'vm2';
 const { VM } = VMModule;
 
 
+
 import { Resend } from "resend"
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
@@ -14,6 +15,7 @@ const { simpleParser } = simpleParserModule;
 
 import moment from "moment-timezone"
 import { nanoid } from 'nanoid';
+import { Buffer } from "buffer"
 import crypto from "crypto"
 
 
@@ -52,7 +54,8 @@ export const handler = async (event: Event) => {
     crypto,
     moment,
     encoder,
-    decoder
+    decoder,
+    Buffer // required for twilio Authorization token
 };
 
 
@@ -119,7 +122,8 @@ try {
     crypto,
     moment,
     encoder,
-    decoder} = imports;
+    decoder,
+    Buffer} = imports;
 
     (async () => {
       try {
