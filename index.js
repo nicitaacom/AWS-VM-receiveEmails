@@ -18,6 +18,50 @@ const nanoid_1 = require("nanoid");
 const buffer_1 = require("buffer");
 const url_1 = require("url");
 const crypto_1 = __importDefault(require("crypto"));
+// DO NOT use this function in VM - for some reason it work with resend but doesn't work with redis
+// I tried to change environment from node 22 to node 20 and ask chatGPT - useless
+async function decryptResend(encryptedResendEnvValue) {
+    try {
+        // Define encoder and decoder - these were missing in your original code
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        const secretKey = JSON.stringify({
+            secret: "DB",
+            provider: "resend",
+            APIKey: "someAPIKeyHere",
+        });
+        // Decode base64 to Uint8Array
+        const encryptedData = buffer_1.Buffer.from(encryptedResendEnvValue, "base64");
+        // Extract the salt, iv, and encrypted content
+        const salt = encryptedData.slice(0, 16);
+        const iv = encryptedData.slice(16, 28);
+        const encrypted = encryptedData.slice(28);
+        const keyMaterial = await crypto_1.default.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, [
+            "deriveKey",
+        ]);
+        // Derive the key
+        const key = await crypto_1.default.subtle.deriveKey({
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 310,
+            hash: "SHA-256",
+        }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+        // Decrypt the data
+        const decrypted = await crypto_1.default.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, encrypted);
+        // Parse the decrypted data as JSON to extract key-value object
+        const decodedText = decoder.decode(decrypted);
+        const result = JSON.parse(decodedText);
+        // Ensure the object contains only key and value fields
+        if (Object.keys(result).length !== 2 || !('key' in result) || !('value' in result)) {
+            return "error: decrypted object must contain only key and value fields";
+        }
+        return { key: result.key, value: result.value };
+    }
+    catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during decryption.";
+        return `Decryption failed: ${errorMessage}`;
+    }
+}
 const handler = async (event) => {
     if (!process.env.NEXT_PUBLIC_PRODUCTION_URL || !process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
         return {
@@ -25,8 +69,6 @@ const handler = async (event) => {
             error: 'NEXT_PUBLIC_PRODUCTION_URL or NEXT_PUBLIC_PRODUCTION_AUTH_URL missing',
         };
     }
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
     const imports = {
         Resend: resend_1.Resend,
         Redis: ioredis_1.Redis,
@@ -40,11 +82,10 @@ const handler = async (event) => {
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
         moment: moment_timezone_1.default,
-        encoder,
-        decoder,
         Buffer: buffer_1.Buffer,
         URLSearchParams: // required for twilio Authorization token
         url_1.URLSearchParams,
+        decryptResend
     };
     const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -90,10 +131,9 @@ const handler = async (event) => {
     nanoid,
     crypto,
     moment,
-    encoder,
-    decoder,
     Buffer,
-    URLSearchParams} = imports;
+    URLSearchParams,
+    decryptResend} = imports;
 
     (async () => {
       try {
