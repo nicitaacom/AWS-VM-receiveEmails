@@ -96,6 +96,8 @@ export const handler = async (event: Event) => {
   } 
 }
 
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
 
 
 
@@ -112,6 +114,8 @@ export const handler = async (event: Event) => {
     nanoid,
     crypto,
     moment,
+    encoder,
+    decoder,
     Buffer, // required for twilio Authorization token
     URLSearchParams,
     decryptResend
@@ -179,6 +183,8 @@ try {
     simpleParser,
     nanoid,
     crypto,
+    encoder,
+    decoder,
     moment,
     Buffer,
     URLSearchParams,

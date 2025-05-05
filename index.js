@@ -69,6 +69,8 @@ const handler = async (event) => {
             error: 'NEXT_PUBLIC_PRODUCTION_URL or NEXT_PUBLIC_PRODUCTION_AUTH_URL missing',
         };
     }
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
     const imports = {
         Resend: resend_1.Resend,
         Redis: ioredis_1.Redis,
@@ -82,6 +84,8 @@ const handler = async (event) => {
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
         moment: moment_timezone_1.default,
+        encoder,
+        decoder,
         Buffer: buffer_1.Buffer,
         URLSearchParams: // required for twilio Authorization token
         url_1.URLSearchParams,
@@ -130,6 +134,8 @@ const handler = async (event) => {
     simpleParser,
     nanoid,
     crypto,
+    encoder,
+    decoder,
     moment,
     Buffer,
     URLSearchParams,
