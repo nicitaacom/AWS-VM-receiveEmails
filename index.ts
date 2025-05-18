@@ -19,7 +19,8 @@ import { Buffer } from "buffer"
 import { URLSearchParams } from "url"
 import crypto from "crypto"
 
-
+import { readFileSync } from "fs"
+import path from "path"
 
 
 
@@ -101,6 +102,17 @@ export const handler = async (event: Event) => {
 
 
 
+
+  // 📁 Works because CommonJS has __dirname by default
+  const filePath = path.join(__dirname, "freeEmailList.txt")
+
+  const freeEmailDomains = readFileSync(filePath, "utf-8")
+    .split("\n")
+    .map(domain => domain.trim().toLowerCase())
+    .filter(Boolean) // remove empty lines
+
+  
+
   const imports = {
     Resend,
     Redis,
@@ -116,6 +128,7 @@ export const handler = async (event: Event) => {
     moment,
     encoder,
     decoder,
+    freeEmailDomains,
     Buffer, // required for twilio Authorization token
     URLSearchParams,
     decryptResend
@@ -186,6 +199,7 @@ try {
     encoder,
     decoder,
     moment,
+    freeEmailDomains,
     Buffer,
     URLSearchParams,
     decryptResend} = imports;

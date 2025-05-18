@@ -18,6 +18,8 @@ const nanoid_1 = require("nanoid");
 const buffer_1 = require("buffer");
 const url_1 = require("url");
 const crypto_1 = __importDefault(require("crypto"));
+const fs_1 = require("fs");
+const path_1 = __importDefault(require("path"));
 // DO NOT use this function in VM - for some reason it work with resend but doesn't work with redis
 // I tried to change environment from node 22 to node 20 and ask chatGPT - useless
 async function decryptResend(encryptedResendEnvValue) {
@@ -71,6 +73,12 @@ const handler = async (event) => {
     }
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
+    // 📁 Works because CommonJS has __dirname by default
+    const filePath = path_1.default.join(__dirname, "freeEmailList.txt");
+    const freeEmailDomains = (0, fs_1.readFileSync)(filePath, "utf-8")
+        .split("\n")
+        .map(domain => domain.trim().toLowerCase())
+        .filter(Boolean); // remove empty lines
     const imports = {
         Resend: resend_1.Resend,
         Redis: ioredis_1.Redis,
@@ -86,6 +94,7 @@ const handler = async (event) => {
         moment: moment_timezone_1.default,
         encoder,
         decoder,
+        freeEmailDomains,
         Buffer: buffer_1.Buffer,
         URLSearchParams: // required for twilio Authorization token
         url_1.URLSearchParams,
@@ -137,6 +146,7 @@ const handler = async (event) => {
     encoder,
     decoder,
     moment,
+    freeEmailDomains,
     Buffer,
     URLSearchParams,
     decryptResend} = imports;
