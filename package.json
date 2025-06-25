@@ -1,5 +1,8 @@
 {
   "description": "This is code that fetch code and execute it",
+  "scripts": {
+    "build":"rm -rf VM-receiveEmails.zip && tsc && zip -r VM-receiveEmails.zip freeEmailList.txt index.js node_modules"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.665.0",
     "@aws-sdk/client-scheduler": "^3.670.0",
