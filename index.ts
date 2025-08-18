@@ -3,7 +3,6 @@ const { VM } = VMModule;
 
 
 
-import { Resend } from "resend"
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
 import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
@@ -25,70 +24,11 @@ import path from "path"
 
 
 
-// DO NOT use this function in VM - for some reason it work with resend but doesn't work with redis
-// I tried to change environment from node 22 to node 20 and ask chatGPT - useless
-async function decryptResend(encryptedResendEnvValue:string) {
-  try {
-    // Define encoder and decoder - these were missing in your original code
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-    
-    const secretKey = JSON.stringify({
-      secret: "DB",
-      provider: "resend",
-      APIKey: "someAPIKeyHere",
-    })
-
-    // Decode base64 to Uint8Array
-    const encryptedData = Buffer.from(encryptedResendEnvValue, "base64")
-
-    // Extract the salt, iv, and encrypted content
-    const salt = encryptedData.slice(0, 16)
-    const iv = encryptedData.slice(16, 28)
-    const encrypted = encryptedData.slice(28)
-
-    const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, [
-      "deriveKey",
-    ])
-
-    // Derive the key
-    const key = await crypto.subtle.deriveKey(
-      {
-        name: "PBKDF2",
-        salt: salt,
-        iterations: 310,
-        hash: "SHA-256",
-      },
-      keyMaterial,
-      { name: "AES-GCM", length: 256 },
-      false,
-      ["decrypt"],
-    )
-
-    // Decrypt the data
-    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, encrypted)
-
-    // Parse the decrypted data as JSON to extract key-value object
-    const decodedText = decoder.decode(decrypted)
-    const result = JSON.parse(decodedText)
-
-    // Ensure the object contains only key and value fields
-    if (Object.keys(result).length !== 2 || !('key' in result) || !('value' in result)) {
-      return "error: decrypted object must contain only key and value fields"
-    }
-
-    return { key: result.key, value: result.value }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred during decryption."
-    return `Decryption failed: ${errorMessage}`
-  }
-}
 
 
 
 
-
-// DO NOT use this function in VM - for some reason it work with resend but doesn't work with redis
+// DO NOT use this function in VM - for some reason it work with smth else but doesn't work with redis
 // I tried to change environment from node 22 to node 20 and ask chatGPT - useless
 export async function decryptTelegramChatId(encryptedTelegramChatId: string) {
   if (typeof window === "undefined") {
@@ -147,7 +87,7 @@ export async function decryptTelegramChatId(encryptedTelegramChatId: string) {
 
 
 
-// DO NOT use this function in VM - for some reason it work with resend but doesn't work with redis
+// DO NOT use this function in VM - for some reason it work with smth else but doesn't work with redis
 export async function decryptTelegramBotToken(encryptedTelegramBotToken: string) {
   if (typeof window === "undefined") {
     try {
@@ -315,7 +255,6 @@ export const handler = async (event: Event) => {
   
 
   const imports = {
-    Resend,
     Redis,
     GetObjectCommand,
     DeleteObjectCommand,
@@ -332,7 +271,6 @@ export const handler = async (event: Event) => {
     freeEmailDomains,
     Buffer, // required for twilio Authorization token
     URLSearchParams,
-    decryptResend,
     decryptTelegramChatId,
     decryptTelegramBotToken,
     decryptDiscordWebhookUrl
@@ -389,7 +327,6 @@ try {
 
   const wrappedCode = `  
     const { 
-    Resend,
     Redis,
     GetObjectCommand,
     DeleteObjectCommand,
@@ -406,7 +343,7 @@ try {
     freeEmailDomains,
     Buffer,
     URLSearchParams,
-    decryptResend, decryptTelegramChatId, decryptTelegramBotToken, decryptDiscordWebhookUrl} = imports;
+    decryptTelegramChatId, decryptTelegramBotToken, decryptDiscordWebhookUrl} = imports;
 
     (async () => {
       try {
