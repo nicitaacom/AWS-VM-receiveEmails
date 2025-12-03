@@ -105,7 +105,7 @@ async function decryptDiscordWebhookUrl(encryptedDiscordWebhookUrl: string): Pro
 // DO NOT use this function in VM - for some reason it work with smth else but doesn't work with redis
 
 interface TelegramEnvs {
-  telegramToken: string
+  telegramBotToken: string
   telegramChatId: string
 }
 
@@ -139,14 +139,14 @@ export async function decryptTelegramEnvs(encryptedBase64: string): Promise<Tele
       const json = decoder.decode(decrypted)
       const data = JSON.parse(json)
 
-      const token = data.telegramBotToken
-      const chatId = data.telegramChatId
+      const telegramBotToken = data.telegramBotToken
+      const telegramChatId = data.telegramChatId
 
       // === FINAL VALIDATION ===
-      if (typeof token !== "string" || token.trim() === "") return "Invalid telegramBotToken"
-      if (typeof chatId !== "string" || chatId.trim() === "") return "Invalid telegramChatId"
+      if (typeof telegramBotToken !== "string" || telegramBotToken.trim() === "") return "Invalid telegramBotToken"
+      if (typeof telegramChatId !== "string" || telegramChatId.trim() === "") return "Invalid telegramChatId"
 
-      return { telegramToken: token, telegramChatId: chatId }
+      return { telegramBotToken, telegramChatId }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       return `Decryption failed: ${message}`

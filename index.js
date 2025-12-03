@@ -77,11 +77,11 @@ async function decryptTelegramEnvs(encryptedBase64) {
             const decrypted = await crypto_1.default.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
             const json = decoder.decode(decrypted);
             const data = JSON.parse(json);
-            const token = data.telegramToken;
+            const token = data.telegramBotToken;
             const chatId = data.telegramChatId;
             // === FINAL VALIDATION ===
             if (typeof token !== "string" || token.trim() === "")
-                return "Invalid telegramToken";
+                return "Invalid telegramBotToken";
             if (typeof chatId !== "string" || chatId.trim() === "")
                 return "Invalid telegramChatId";
             return { telegramToken: token, telegramChatId: chatId };
