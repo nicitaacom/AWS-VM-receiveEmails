@@ -6,6 +6,8 @@ const { VM } = VMModule;
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
 import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
+
 import { createClient } from "@supabase/supabase-js"
 
 
@@ -137,11 +139,11 @@ export async function decryptTelegramEnvs(encryptedBase64: string): Promise<Tele
       const json = decoder.decode(decrypted)
       const data = JSON.parse(json)
 
-      const token = data.telegramToken
+      const token = data.telegramBotToken
       const chatId = data.telegramChatId
 
       // === FINAL VALIDATION ===
-      if (typeof token !== "string" || token.trim() === "") return "Invalid telegramToken"
+      if (typeof token !== "string" || token.trim() === "") return "Invalid telegramBotToken"
       if (typeof chatId !== "string" || chatId.trim() === "") return "Invalid telegramChatId"
 
       return { telegramToken: token, telegramChatId: chatId }
@@ -275,6 +277,7 @@ export const handler = async (event: Event) => {
     S3Client,
     DeleteScheduleCommand,
     SchedulerClient,
+    SESClient, SendEmailCommand,
     createClient,
     simpleParser,
     nanoid,
@@ -347,6 +350,7 @@ export const handler = async (event: Event) => {
         S3Client,
         DeleteScheduleCommand,
         SchedulerClient,
+        SESClient, SendEmailCommand,
         createClient,
         simpleParser,
         nanoid,

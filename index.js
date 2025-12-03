@@ -9,6 +9,7 @@ const { VM } = vm2_1.default;
 const ioredis_1 = require("ioredis");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const client_scheduler_1 = require("@aws-sdk/client-scheduler");
+const client_ses_1 = require("@aws-sdk/client-ses");
 const supabase_js_1 = require("@supabase/supabase-js");
 const mailparser_1 = __importDefault(require("mailparser"));
 const { simpleParser } = mailparser_1.default;
@@ -159,6 +160,7 @@ const handler = async (event) => {
         S3Client: client_s3_1.S3Client,
         DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand,
         SchedulerClient: client_scheduler_1.SchedulerClient,
+        SESClient: client_ses_1.SESClient, SendEmailCommand: client_ses_1.SendEmailCommand,
         createClient: supabase_js_1.createClient,
         simpleParser,
         nanoid: nanoid_1.nanoid,
@@ -211,6 +213,7 @@ const handler = async (event) => {
         S3Client,
         DeleteScheduleCommand,
         SchedulerClient,
+        SESClient, SendEmailCommand,
         createClient,
         simpleParser,
         nanoid,
