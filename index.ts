@@ -4,8 +4,6 @@ const { VM } = VMModule;
 
 
 import { Redis } from "ioredis";
-import { Ratelimit } from "@upstash/ratelimit"
-
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
 import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
@@ -274,7 +272,6 @@ export const handler = async (event: Event) => {
 
   const imports = {
     Redis,
-    Ratelimit,
     GetObjectCommand,
     DeleteObjectCommand,
     S3Client,
@@ -348,7 +345,6 @@ export const handler = async (event: Event) => {
     const wrappedCode = `  
       const { 
         Redis,
-        Ratelimit,
         GetObjectCommand,
         DeleteObjectCommand,
         S3Client,
