@@ -9,6 +9,7 @@
     "@aws-sdk/client-ses": "^3.864.0",
     "@supabase/supabase-js": "^2.39.0",
     "ioredis": "^5.4.1",
+    "@upstash/ratelimit": "2.0.8",
     "mailparser": "^3.7.1",
     "moment-timezone": "^0.5.45",
     "nanoid": "^3.3.7",

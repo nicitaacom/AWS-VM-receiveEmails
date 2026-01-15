@@ -7,6 +7,7 @@ exports.handler = exports.decryptTelegramEnvs = void 0;
 const vm2_1 = __importDefault(require("vm2"));
 const { VM } = vm2_1.default;
 const ioredis_1 = require("ioredis");
+const ratelimit_1 = require("@upstash/ratelimit");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const client_scheduler_1 = require("@aws-sdk/client-scheduler");
 const client_ses_1 = require("@aws-sdk/client-ses");
@@ -155,6 +156,7 @@ const handler = async (event) => {
         .filter(Boolean); // remove empty lines
     const imports = {
         Redis: ioredis_1.Redis,
+        Ratelimit: ratelimit_1.Ratelimit,
         GetObjectCommand: client_s3_1.GetObjectCommand,
         DeleteObjectCommand: client_s3_1.DeleteObjectCommand,
         S3Client: client_s3_1.S3Client,
@@ -208,6 +210,7 @@ const handler = async (event) => {
     const wrappedCode = `  
       const { 
         Redis,
+        Ratelimit,
         GetObjectCommand,
         DeleteObjectCommand,
         S3Client,
