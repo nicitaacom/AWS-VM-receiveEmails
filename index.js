@@ -11,6 +11,7 @@ const client_s3_1 = require("@aws-sdk/client-s3");
 const client_scheduler_1 = require("@aws-sdk/client-scheduler");
 const client_ses_1 = require("@aws-sdk/client-ses");
 const supabase_js_1 = require("@supabase/supabase-js");
+const pusher_1 = __importDefault(require("pusher"));
 const mailparser_1 = __importDefault(require("mailparser"));
 const { simpleParser } = mailparser_1.default;
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
@@ -172,6 +173,7 @@ const handler = async (event) => {
         Buffer: buffer_1.Buffer,
         URLSearchParams: // required for twilio Authorization token
         url_1.URLSearchParams,
+        PusherServer: pusher_1.default,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs
@@ -224,6 +226,7 @@ const handler = async (event) => {
         freeEmailDomains,
         Buffer,
         URLSearchParams,
+        PusherServer,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs

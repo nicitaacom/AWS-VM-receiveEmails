@@ -9,6 +9,8 @@ import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-schedule
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 
 import { createClient } from "@supabase/supabase-js"
+import PusherServer from "pusher"
+
 
 
 import simpleParserModule from 'mailparser';
@@ -288,6 +290,7 @@ export const handler = async (event: Event) => {
     freeEmailDomains,
     Buffer, // required for twilio Authorization token
     URLSearchParams,
+    PusherServer,
     decryptDiscordWebhookUrl,
     decryptTelegramEnvs,
     decryptTwilioEnvs
@@ -361,6 +364,7 @@ export const handler = async (event: Event) => {
         freeEmailDomains,
         Buffer,
         URLSearchParams,
+        PusherServer,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs
