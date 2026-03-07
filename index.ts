@@ -340,7 +340,7 @@ export const handler = async (event: Event) => {
     const transformedCode = responseData.code
     // Remove the export handler function line, adjusting to potentially varying spaces
     .replace("export const handler = async (event) => {", '') // Remove handler definition line
-    .replace("};", ''); // Remove only the last closing `};`
+    .replace(/\};\s*$/, "")  // Remove only the last closing `};`
 
 
 
