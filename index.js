@@ -170,6 +170,7 @@ const handler = async (event) => {
         encoder,
         decoder,
         freeEmailDomains,
+        setTimeout,
         Buffer: buffer_1.Buffer,
         URLSearchParams: // required for twilio Authorization token
         url_1.URLSearchParams,
@@ -206,7 +207,7 @@ const handler = async (event) => {
     const transformedCode = responseData.code
         // Remove the export handler function line, adjusting to potentially varying spaces
         .replace("export const handler = async (event) => {", '') // Remove handler definition line
-        .replace("};", ''); // Remove only the last closing `};`
+        .replace(/\};\s*$/, ""); // Remove only the last closing `};`
     const wrappedCode = `  
       const { 
         Redis,
@@ -224,6 +225,7 @@ const handler = async (event) => {
         decoder,
         moment,
         freeEmailDomains,
+        setTimeout,
         Buffer,
         URLSearchParams,
         PusherServer,

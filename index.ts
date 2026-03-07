@@ -2,7 +2,6 @@ import VMModule from 'vm2';
 const { VM } = VMModule;
 
 
-
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
 import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
@@ -288,6 +287,7 @@ export const handler = async (event: Event) => {
     encoder,
     decoder,
     freeEmailDomains,
+    setTimeout,
     Buffer, // required for twilio Authorization token
     URLSearchParams,
     PusherServer,
@@ -295,7 +295,6 @@ export const handler = async (event: Event) => {
     decryptTelegramEnvs,
     decryptTwilioEnvs
   }
-
 
 
 
@@ -362,6 +361,7 @@ export const handler = async (event: Event) => {
         decoder,
         moment,
         freeEmailDomains,
+        setTimeout,
         Buffer,
         URLSearchParams,
         PusherServer,
