@@ -21,6 +21,8 @@ const url_1 = require("url");
 const crypto_1 = __importDefault(require("crypto"));
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
+const NEXT_PUBLIC_PRODUCTION_URL = "https://www.outreach-tool.com/";
+const NEXT_PUBLIC_PRODUCTION_AUTH_URL = "https://auth.outreach-tool.com/";
 // DO NOT use this function in VM - for some reason it work with smth else but doesn't work with redis
 async function decryptDiscordWebhookUrl(encryptedDiscordWebhookUrl) {
     if (typeof window === "undefined") {
@@ -140,10 +142,10 @@ async function decryptTwilioEnvs(encryptedBase64) {
     return "This function must be run on the server.";
 }
 const handler = async (event) => {
-    if (!process.env.NEXT_PUBLIC_PRODUCTION_URL || !process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
+    if (!NEXT_PUBLIC_PRODUCTION_URL || !NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
         return {
             statusCode: 400,
-            error: 'NEXT_PUBLIC_PRODUCTION_URL or NEXT_PUBLIC_PRODUCTION_AUTH_URL missing',
+            error: `const NEXT_PUBLIC_PRODUCTION_URL or const NEXT_PUBLIC_PRODUCTION_AUTH_URL missing`,
         };
     }
     const encoder = new TextEncoder();
@@ -179,11 +181,11 @@ const handler = async (event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs
     };
-    const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
+    const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-Forwarded-For": process.env.NEXT_PUBLIC_PRODUCTION_URL, // Non-null assertion, validated above
+            "X-Forwarded-For": NEXT_PUBLIC_PRODUCTION_URL
         },
         cache: "no-cache", // Should be no cache to improve security
     });

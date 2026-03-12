@@ -27,7 +27,8 @@ import path from "path"
 
 
 
-
+const NEXT_PUBLIC_PRODUCTION_URL = "https://www.outreach-tool.com/"
+const NEXT_PUBLIC_PRODUCTION_AUTH_URL = "https://auth.outreach-tool.com/"
 
 
 
@@ -248,10 +249,10 @@ async function decryptTwilioEnvs(encryptedBase64: string): Promise<TwilioEnvs | 
 
 export const handler = async (event: Event) => {
 
-  if (!process.env.NEXT_PUBLIC_PRODUCTION_URL || !process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
+  if (!NEXT_PUBLIC_PRODUCTION_URL || !NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
     return {
       statusCode: 400,
-      error: 'NEXT_PUBLIC_PRODUCTION_URL or NEXT_PUBLIC_PRODUCTION_AUTH_URL missing',
+      error: `const NEXT_PUBLIC_PRODUCTION_URL or const NEXT_PUBLIC_PRODUCTION_AUTH_URL missing`,
     } 
   }
 
@@ -304,11 +305,11 @@ export const handler = async (event: Event) => {
 
 
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
+  const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Forwarded-For": process.env.NEXT_PUBLIC_PRODUCTION_URL!, // Non-null assertion, validated above
+      "X-Forwarded-For": NEXT_PUBLIC_PRODUCTION_URL
     },
     cache: "no-cache", // Should be no cache to improve security
   });
