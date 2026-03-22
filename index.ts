@@ -256,11 +256,6 @@ export const handler = async (event: Event) => {
     } 
   }
 
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
-
-
-
 
   // 📁 Works because CommonJS has __dirname by default
   const filePath = path.join(__dirname, "freeEmailList.txt")
@@ -285,16 +280,16 @@ export const handler = async (event: Event) => {
     nanoid,
     crypto,
     moment,
-    encoder,
-    decoder,
     freeEmailDomains,
-    setTimeout,
-    Buffer, // required for twilio Authorization token
-    URLSearchParams,
     PusherServer,
     decryptDiscordWebhookUrl,
     decryptTelegramEnvs,
-    decryptTwilioEnvs
+    decryptTwilioEnvs,
+    
+    // Node related
+    setTimeout,
+    Buffer, // required for twilio Authorization token
+    URLSearchParams,
   }
 
 
@@ -358,17 +353,17 @@ export const handler = async (event: Event) => {
         simpleParser,
         nanoid,
         crypto,
-        encoder,
-        decoder,
         moment,
         freeEmailDomains,
-        setTimeout,
-        Buffer,
-        URLSearchParams,
         PusherServer,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
-        decryptTwilioEnvs
+        decryptTwilioEnvs,
+        
+        // Node related
+        setTimeout,
+        Buffer,
+        URLSearchParams,
       } = imports;
 
       (async () => {

@@ -148,8 +148,6 @@ const handler = async (event) => {
             error: `const NEXT_PUBLIC_PRODUCTION_URL or const NEXT_PUBLIC_PRODUCTION_AUTH_URL missing`,
         };
     }
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
     // 📁 Works because CommonJS has __dirname by default
     const filePath = path_1.default.join(__dirname, "freeEmailList.txt");
     const freeEmailDomains = (0, fs_1.readFileSync)(filePath, "utf-8")
@@ -169,17 +167,16 @@ const handler = async (event) => {
         nanoid: nanoid_1.nanoid,
         crypto: crypto_1.default,
         moment: moment_timezone_1.default,
-        encoder,
-        decoder,
         freeEmailDomains,
+        PusherServer: pusher_1.default,
+        decryptDiscordWebhookUrl,
+        decryptTelegramEnvs,
+        decryptTwilioEnvs,
+        // Node related
         setTimeout,
         Buffer: buffer_1.Buffer,
         URLSearchParams: // required for twilio Authorization token
         url_1.URLSearchParams,
-        PusherServer: pusher_1.default,
-        decryptDiscordWebhookUrl,
-        decryptTelegramEnvs,
-        decryptTwilioEnvs
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -223,17 +220,17 @@ const handler = async (event) => {
         simpleParser,
         nanoid,
         crypto,
-        encoder,
-        decoder,
         moment,
         freeEmailDomains,
-        setTimeout,
-        Buffer,
-        URLSearchParams,
         PusherServer,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
-        decryptTwilioEnvs
+        decryptTwilioEnvs,
+        
+        // Node related
+        setTimeout,
+        Buffer,
+        URLSearchParams,
       } = imports;
 
       (async () => {
