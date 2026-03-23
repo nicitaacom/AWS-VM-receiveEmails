@@ -11,16 +11,18 @@ import { createClient } from "@supabase/supabase-js"
 import PusherServer from "pusher"
 
 
-
 import simpleParserModule from 'mailparser';
 const { simpleParser } = simpleParserModule;
 
 import moment from "moment-timezone"
 import { nanoid } from 'nanoid';
+
+// Node related
 import { Buffer } from "buffer"
 import { URLSearchParams } from "url"
 import crypto from "crypto"
 
+// For freeEmailDomains - so I fetch from entiryRedis envs by correct userId (if sent from gmail cuz user.email domain might be ukr.net)
 import { readFileSync } from "fs"
 import path from "path"
 
@@ -278,18 +280,13 @@ export const handler = async (event: Event) => {
     createClient,
     simpleParser,
     nanoid,
-    crypto,
     moment,
     freeEmailDomains,
     PusherServer,
     decryptDiscordWebhookUrl,
     decryptTelegramEnvs,
     decryptTwilioEnvs,
-    
-    // Node related
-    setTimeout,
-    Buffer, // required for twilio Authorization token
-    URLSearchParams,
+    crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
   }
 
 
@@ -323,7 +320,12 @@ export const handler = async (event: Event) => {
       process: {
         env: { ...process.env },
       },
+      // Node related
+      setTimeout,
+      Buffer, // required for twilio Authorization token
+      URLSearchParams,
       fetch, // Pass fetch to the sandbox
+
       event, // Pass the event to the VM sandbox
       imports
     },
@@ -354,16 +356,11 @@ export const handler = async (event: Event) => {
         nanoid,
         crypto,
         moment,
-        freeEmailDomains,
         PusherServer,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs,
-        
-        // Node related
-        setTimeout,
-        Buffer,
-        URLSearchParams,
+        freeEmailDomains,
       } = imports;
 
       (async () => {

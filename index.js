@@ -16,9 +16,11 @@ const mailparser_1 = __importDefault(require("mailparser"));
 const { simpleParser } = mailparser_1.default;
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const nanoid_1 = require("nanoid");
+// Node related
 const buffer_1 = require("buffer");
 const url_1 = require("url");
 const crypto_1 = __importDefault(require("crypto"));
+// For freeEmailDomains - so I fetch from entiryRedis envs by correct userId (if sent from gmail cuz user.email domain might be ukr.net)
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const NEXT_PUBLIC_PRODUCTION_URL = "https://www.outreach-tool.com/";
@@ -165,18 +167,13 @@ const handler = async (event) => {
         createClient: supabase_js_1.createClient,
         simpleParser,
         nanoid: nanoid_1.nanoid,
-        crypto: crypto_1.default,
         moment: moment_timezone_1.default,
         freeEmailDomains,
         PusherServer: pusher_1.default,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs,
-        // Node related
-        setTimeout,
-        Buffer: buffer_1.Buffer,
-        URLSearchParams: // required for twilio Authorization token
-        url_1.URLSearchParams,
+        crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -197,6 +194,11 @@ const handler = async (event) => {
             process: {
                 env: { ...process.env },
             },
+            // Node related
+            setTimeout,
+            Buffer: buffer_1.Buffer,
+            URLSearchParams: // required for twilio Authorization token
+            url_1.URLSearchParams,
             fetch,
             event,
             imports
@@ -221,16 +223,11 @@ const handler = async (event) => {
         nanoid,
         crypto,
         moment,
-        freeEmailDomains,
         PusherServer,
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs,
-        
-        // Node related
-        setTimeout,
-        Buffer,
-        URLSearchParams,
+        freeEmailDomains,
       } = imports;
 
       (async () => {
