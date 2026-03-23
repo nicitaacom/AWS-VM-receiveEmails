@@ -240,6 +240,53 @@ async function decryptTwilioEnvs(encryptedBase64: string): Promise<TwilioEnvs | 
 
 
 
+export async function decryptAICredentialsFn(encryptedBase64: string): Promise<{ apiKey: string } | string> {
+  if (typeof window === "undefined") {
+    try {
+      const encoder = new TextEncoder()
+
+      const secretKey = JSON.stringify({
+        secret: "redis+supabase",
+        provider: "ai-credentials",
+        APIKey: "example-here",
+        route: "/",
+        reason: "ai-manages-emails",
+      })
+
+      const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, [
+        "deriveKey",
+      ])
+
+      const combined = new Uint8Array(Buffer.from(encryptedBase64, "base64"))
+      const salt = combined.slice(0, 16)
+      const iv = combined.slice(16, 28)
+      const ciphertext = combined.slice(28)
+
+      const key = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt, iterations: 310000, hash: "SHA-256" },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"],
+      )
+
+      const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext)
+      const apiKey = JSON.parse(new TextDecoder().decode(decrypted)) as string
+      return { apiKey }
+    } catch (error) {
+      return `Decryption failed: ${error instanceof Error ? error.message : String(error)}`
+    }
+  }
+  return "This function must be run on the server."
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -286,6 +333,7 @@ export const handler = async (event: Event) => {
     decryptDiscordWebhookUrl,
     decryptTelegramEnvs,
     decryptTwilioEnvs,
+    decryptAICredentialsFn,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
   }
 
@@ -361,6 +409,7 @@ export const handler = async (event: Event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs,
         freeEmailDomains,
+        decryptAICredentialsFn
       } = imports;
 
       (async () => {

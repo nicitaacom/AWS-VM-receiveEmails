@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handler = exports.decryptTelegramEnvs = void 0;
+exports.handler = exports.decryptAICredentialsFn = exports.decryptTelegramEnvs = void 0;
 const vm2_1 = __importDefault(require("vm2"));
 const { VM } = vm2_1.default;
 const ioredis_1 = require("ioredis");
@@ -143,6 +143,36 @@ async function decryptTwilioEnvs(encryptedBase64) {
     }
     return "This function must be run on the server.";
 }
+async function decryptAICredentialsFn(encryptedBase64) {
+    if (typeof window === "undefined") {
+        try {
+            const encoder = new TextEncoder();
+            const secretKey = JSON.stringify({
+                secret: "redis+supabase",
+                provider: "ai-credentials",
+                APIKey: "example-here",
+                route: "/",
+                reason: "ai-manages-emails",
+            });
+            const keyMaterial = await crypto_1.default.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, [
+                "deriveKey",
+            ]);
+            const combined = new Uint8Array(buffer_1.Buffer.from(encryptedBase64, "base64"));
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const ciphertext = combined.slice(28);
+            const key = await crypto_1.default.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 310000, hash: "SHA-256" }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+            const decrypted = await crypto_1.default.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+            const apiKey = JSON.parse(new TextDecoder().decode(decrypted));
+            return { apiKey };
+        }
+        catch (error) {
+            return `Decryption failed: ${error instanceof Error ? error.message : String(error)}`;
+        }
+    }
+    return "This function must be run on the server.";
+}
+exports.decryptAICredentialsFn = decryptAICredentialsFn;
 const handler = async (event) => {
     if (!NEXT_PUBLIC_PRODUCTION_URL || !NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
         return {
@@ -173,6 +203,7 @@ const handler = async (event) => {
         decryptDiscordWebhookUrl,
         decryptTelegramEnvs,
         decryptTwilioEnvs,
+        decryptAICredentialsFn,
         crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
@@ -228,6 +259,7 @@ const handler = async (event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs,
         freeEmailDomains,
+        decryptAICredentialsFn
       } = imports;
 
       (async () => {
