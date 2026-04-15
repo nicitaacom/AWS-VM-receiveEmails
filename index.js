@@ -240,6 +240,13 @@ const handler = async (event) => {
         // Remove the export handler function line, adjusting to potentially varying spaces
         .replace("export const handler = async (event) => {", '') // Remove handler definition line
         .replace(/\};\s*$/, ""); // Remove only the last closing `};`
+    // 1. extract ALL needed debug helpers with better regex
+    const debugConstMatch = transformedCode.match(/const DEBUG_DISCORD_WEBHOOK_URL\s*=\s*"([^"]+)"/);
+    const truncateMatch = transformedCode.match(/const truncateLongFields\s*=\s*\(errorMessage\)\s*=>\s*\{[\s\S]*?return JSON\.stringify\(parsed\)\s*\}/);
+    const validateMatch = transformedCode.match(/const validateParsedError\s*=\s*\(parsed\)\s*=>\s*[\s\S]*?typeof parsed\.lambdaFnName === "string"/);
+    const getErrorInfoMatch = transformedCode.match(/const getErrorInfo\s*=\s*\(errorMessage\)\s*=>\s*\{[\s\S]*?return \{ lambdaFnName, cause, formattedTime, processedMessage, parsingError \}\s*\}/);
+    const sendFnMatch = transformedCode.match(/const sendDiscordDebugMessage\s*=\s*async\s*\(errorMessage\)\s*=>\s*\{[\s\S]*?return true\s*\}/);
+    const getPartsFnMatch = transformedCode.match(/const getDiscordMessageParts\s*=\s*\(processedMessage,\s*headerLines(?:,\s*note)?\)\s*=>\s*\{[\s\S]*?return messageParts\s*\}/);
     const wrappedCode = `  
       const { 
         Redis,
@@ -270,11 +277,30 @@ const handler = async (event) => {
       })();
     `;
     // Execute the wrapped code in the VM
-    // Updated 30.11.2025 - this is correct stable version
-    const vm2Resp = await vm.run(wrappedCode);
-    return {
-        statusCode: vm2Resp.statusCode || 500,
-        body: vm2Resp
-    };
+    // Updated 15.04.2026 - this is correct more stable version with debug is CV fail to execute
+    return vm.run(wrappedCode)
+        .then((vm2Resp) => ({ statusCode: vm2Resp.statusCode || 500, body: vm2Resp }))
+        .catch(async (error) => {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        if (debugConstMatch && truncateMatch && validateMatch && getErrorInfoMatch && sendFnMatch && getPartsFnMatch) {
+            const debugCode = `
+          ${debugConstMatch[0]};
+          ${truncateMatch[0]};
+          ${validateMatch[0]};
+          ${getErrorInfoMatch[0]};
+          ${sendFnMatch[0]};
+          ${getPartsFnMatch[0]};
+          await sendDiscordDebugMessage(\`VM runtime error in transformedCode: ${errMsg.replace(/`/g, '\\`').replace(/\n/g, '\\n')}\`)
+        `;
+            try {
+                await vm.run(`(async () => { ${debugCode} })()`);
+            }
+            catch (debugErr) {
+                const debugMessage = debugErr instanceof Error ? debugErr.message : String(debugErr);
+                console.log(250, 'debug send failed too:', debugMessage);
+            }
+        }
+        return { statusCode: 500, body: { error: errMsg } };
+    });
 };
 exports.handler = handler;
