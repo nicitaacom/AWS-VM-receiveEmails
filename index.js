@@ -206,33 +206,19 @@ const handler = async (event) => {
         decryptAICredentialsFn,
         crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     };
-    let response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-        "X-Forwarded-For": NEXT_PUBLIC_PRODUCTION_URL
-    },
-    cache: "no-cache", // Should be no cache to improve security
+    const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Forwarded-For": NEXT_PUBLIC_PRODUCTION_URL
+        },
+        cache: "no-cache", // Should be no cache to improve security
     });
-
     if (!response.ok) {
-    const errorMessage = await response.text();
-        return `Error ${response.status}: ${errorMessage || "Unknown error"}`;
+        const errorMessage = await response.text(); // Get the error message from the response body
+        throw new Error(`Error ${response.status}: ${errorMessage || "Unknown error"}`);
     }
-
-    // 1. Check if response is JSON before parsing
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-        return `Expected JSON but got: ${await response.text()}`;
-    }
-
-    let responseData;
-    try {
-    responseData = await response.json();
-    } catch (err) {
-    return `Failed to parse JSON: ${err.message}`;
-    }
-
+    const responseData = await response.json();
     const vm = new VM({
         timeout: 25000,
         sandbox: {
@@ -311,7 +297,7 @@ const handler = async (event) => {
             }
             catch (debugErr) {
                 const debugMessage = debugErr instanceof Error ? debugErr.message : String(debugErr);
-                console.log(314, 'debug send failed too:', debugMessage);
+                console.log(250, 'debug send failed too:', debugMessage);
             }
         }
         return { statusCode: 500, body: { error: errMsg } };
