@@ -25,6 +25,22 @@ const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
 const NEXT_PUBLIC_PRODUCTION_URL = "https://www.outreach-tool.com/";
 const NEXT_PUBLIC_PRODUCTION_AUTH_URL = "https://auth.outreach-tool.com/";
+process.removeAllListeners("unhandledRejection");
+process.on("unhandledRejection", (reason) => {
+    const dump = {
+        type: typeof reason,
+        isError: reason instanceof Error,
+        message: reason?.message,
+        name: reason?.name,
+        status: reason?.status,
+        body: reason?.body,
+        stack: reason?.stack,
+        keys: reason && typeof reason === "object" ? Object.keys(reason) : [],
+        str: String(reason),
+    };
+    console.log("[UNHANDLED_REJECTION]", JSON.stringify(dump));
+});
+console.log(52, 'unhandledRejection registered');
 // DO NOT use this function in VM - for some reason it work with smth else but doesn't work with redis
 async function decryptDiscordWebhookUrl(encryptedDiscordWebhookUrl) {
     if (typeof window === "undefined") {
@@ -282,6 +298,12 @@ const handler = async (event) => {
         .then((vm2Resp) => ({ statusCode: vm2Resp.statusCode || 500, body: vm2Resp }))
         .catch(async (error) => {
         const errMsg = error instanceof Error ? error.message : String(error);
+        console.log("[VM CATCH] error type:", typeof error);
+        console.log("[VM CATCH] error keys:", error && typeof error === "object" ? Object.keys(error) : "N/A");
+        console.log("[VM CATCH] error stringified:", JSON.stringify(error, Object.getOwnPropertyNames(error || {})));
+        console.log("[VM CATCH] error.message:", error?.message);
+        console.log("[VM CATCH] error.stack:", error?.stack);
+        console.log("[VM CATCH] error.cause:", error?.cause);
         if (debugConstMatch && truncateMatch && validateMatch && getErrorInfoMatch && sendFnMatch && getPartsFnMatch) {
             const debugCode = `
           ${debugConstMatch[0]};

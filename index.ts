@@ -33,6 +33,23 @@ const NEXT_PUBLIC_PRODUCTION_URL = "https://www.outreach-tool.com/"
 const NEXT_PUBLIC_PRODUCTION_AUTH_URL = "https://auth.outreach-tool.com/"
 
 
+process.removeAllListeners("unhandledRejection")
+process.on("unhandledRejection", (reason: any) => {
+  const dump = {
+    type: typeof reason,
+    isError: reason instanceof Error,
+    message: reason?.message,
+    name: reason?.name,
+    status: reason?.status,
+    body: reason?.body,
+    stack: reason?.stack,
+    keys: reason && typeof reason === "object" ? Object.keys(reason) : [],
+    str: String(reason),
+  }
+  console.log("[UNHANDLED_REJECTION]", JSON.stringify(dump))
+})
+
+console.log(52,'unhandledRejection registered')
 
 
 
@@ -435,7 +452,14 @@ export const handler = async (event: Event) => {
     .then((vm2Resp:any) => ({ statusCode: vm2Resp.statusCode || 500, body: vm2Resp }))
     .catch(async (error: Error) => {
       const errMsg = error instanceof Error ? error.message : String(error)
-
+      
+      console.log("[VM CATCH] error type:", typeof error)
+      console.log("[VM CATCH] error keys:", error && typeof error === "object" ? Object.keys(error) : "N/A")
+      console.log("[VM CATCH] error stringified:", JSON.stringify(error, Object.getOwnPropertyNames(error || {})))
+      console.log("[VM CATCH] error.message:", error?.message)
+      console.log("[VM CATCH] error.stack:", error?.stack)
+      console.log("[VM CATCH] error.cause:", (error as any)?.cause)
+      
       if (debugConstMatch && truncateMatch && validateMatch && getErrorInfoMatch && sendFnMatch && getPartsFnMatch) {
         const debugCode = `
           ${debugConstMatch[0]};
