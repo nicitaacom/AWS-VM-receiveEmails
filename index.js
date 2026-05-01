@@ -220,7 +220,7 @@ const handler = async (event) => {
     }
     const responseData = await response.json();
     const vm = new VM({
-        timeout: 25000,
+        timeout: 120000,
         sandbox: {
             process: {
                 env: { ...process.env },
