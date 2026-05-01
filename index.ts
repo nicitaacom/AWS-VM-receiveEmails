@@ -363,7 +363,7 @@ export const handler = async (event: Event) => {
 
 
   const vm = new VM({
-    timeout: 25000, // 25 seconds to prevent Lambda timeout
+    timeout: 120000, // 120 seconds to prevent Lambda timeout
     sandbox: {
       process: {
         env: { ...process.env },
