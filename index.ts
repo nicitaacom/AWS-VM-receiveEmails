@@ -4,7 +4,7 @@ const { VM } = VMModule;
 
 import { Redis } from "ioredis";
 import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
-import { DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
+import { DeleteScheduleCommand, SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler"
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 
 import { createClient } from "@supabase/supabase-js"
@@ -341,6 +341,7 @@ export const handler = async (event: Event) => {
     DeleteScheduleCommand,
     SchedulerClient,
     SESClient, SendEmailCommand,
+    CreateScheduleCommand, // for autoreplies (it schedule email)
     createClient,
     simpleParser,
     nanoid,
@@ -422,6 +423,7 @@ export const handler = async (event: Event) => {
         DeleteScheduleCommand,
         SchedulerClient,
         SESClient, SendEmailCommand,
+        CreateScheduleCommand,
         createClient,
         simpleParser,
         nanoid,

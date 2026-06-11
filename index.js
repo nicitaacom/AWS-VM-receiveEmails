@@ -210,7 +210,9 @@ const handler = async (event) => {
         DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand,
         SchedulerClient: client_scheduler_1.SchedulerClient,
         SESClient: client_ses_1.SESClient, SendEmailCommand: client_ses_1.SendEmailCommand,
-        createClient: supabase_js_1.createClient,
+        CreateScheduleCommand: client_scheduler_1.CreateScheduleCommand,
+        createClient: // for autoreplies (it schedule email)
+        supabase_js_1.createClient,
         simpleParser,
         nanoid: nanoid_1.nanoid,
         moment: moment_timezone_1.default,
@@ -272,6 +274,7 @@ const handler = async (event) => {
         DeleteScheduleCommand,
         SchedulerClient,
         SESClient, SendEmailCommand,
+        CreateScheduleCommand,
         createClient,
         simpleParser,
         nanoid,
