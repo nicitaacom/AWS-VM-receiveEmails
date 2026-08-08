@@ -307,11 +307,14 @@ export async function decryptAICredentialsFn(encryptedBase64: string): Promise<{
   async function decryptAutopilotVerificationEnvs(encryptedStr:string, provider:'zerobounce' | 'verifalia') {
     try {
 
+      const encryptionKey = provider === 'verifalia' ? '4a6842f9' : '50d7bcd2'
+
       const encoder = new TextEncoder()
       const decoder = new TextDecoder()
       const secretKey = JSON.stringify({
         secret: "redis",
         provider,
+        APIKey: `verificationEnvs-${encryptionKey}`,
         route: "/",
         reason: "autopilot-verify-email",
       })
