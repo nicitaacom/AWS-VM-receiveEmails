@@ -312,7 +312,6 @@ export async function decryptAICredentialsFn(encryptedBase64: string): Promise<{
       const secretKey = JSON.stringify({
         secret: "redis",
         provider,
-        APIKey: 'verificationEnvs',
         route: "/",
         reason: "autopilot-verify-email",
       })
@@ -393,6 +392,7 @@ export const handler = async (event: Event) => {
     decryptAICredentialsFn,
     decryptAutopilotVerificationEnvs,
     AbortController,
+    clearTimeout,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
   }
 
@@ -477,6 +477,7 @@ export const handler = async (event: Event) => {
         freeEmailDomains,
         decryptAICredentialsFn,
         decryptAutopilotVerificationEnvs,
+        clearTimeout,
         AbortController
       } = imports;
 

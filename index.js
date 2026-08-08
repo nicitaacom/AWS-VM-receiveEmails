@@ -194,12 +194,13 @@ exports.decryptAICredentialsFn = decryptAICredentialsFn;
 // (salt 16 + iv 12 + ciphertext, PBKDF2 350000 SHA-256, AES-GCM 256).
 async function decryptAutopilotVerificationEnvs(encryptedStr, provider) {
     try {
+        const encryptionKey = provider === 'verifalia' ? '4a6842f9' : '50d7bcd2';
         const encoder = new TextEncoder();
         const decoder = new TextDecoder();
         const secretKey = JSON.stringify({
             secret: "redis",
             provider,
-            APIKey: 'verificationEnvs',
+            APIKey: `verificationEnvs-${encryptionKey}`,
             route: "/",
             reason: "autopilot-verify-email",
         });
@@ -252,6 +253,7 @@ const handler = async (event) => {
         decryptAICredentialsFn,
         decryptAutopilotVerificationEnvs,
         AbortController,
+        clearTimeout,
         crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
@@ -317,6 +319,7 @@ const handler = async (event) => {
         freeEmailDomains,
         decryptAICredentialsFn,
         decryptAutopilotVerificationEnvs,
+        clearTimeout,
         AbortController
       } = imports;
 
