@@ -189,6 +189,34 @@ async function decryptAICredentialsFn(encryptedBase64) {
     return "This function must be run on the server.";
 }
 exports.decryptAICredentialsFn = decryptAICredentialsFn;
+// AES-GCM decrypt shared by both providers - same shape as decryptAICredentialsFn, secretKey per provider.
+// Mirrors outreach-tool app/classes/Envs/functions/public/decryptAutopilotVerificationEnvs*.ts EXACTLY
+// (salt 16 + iv 12 + ciphertext, PBKDF2 350000 SHA-256, AES-GCM 256).
+async function decryptAutopilotVerificationEnvs(encryptedStr, provider) {
+    try {
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        const secretKey = JSON.stringify({
+            secret: "redis",
+            provider,
+            APIKey: 'verificationEnvs',
+            route: "/",
+            reason: "autopilot-verify-email",
+        });
+        const combined = buffer_1.Buffer.from(encryptedStr, "base64");
+        const salt = Uint8Array.from(combined.slice(0, 16));
+        const iv = combined.slice(16, 28);
+        const ciphertext = combined.slice(28);
+        const keyMaterial = await crypto_1.default.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, ["deriveKey"]);
+        const key = await crypto_1.default.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 350000, hash: "SHA-256" }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+        const decrypted = await crypto_1.default.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+        const decoded = JSON.parse(decoder.decode(decrypted));
+        return Array.isArray(decoded) ? decoded : [decoded]; // always an array of creds
+    }
+    catch (error) {
+        return `Decryption failed (${provider}): ${error instanceof Error ? error.message : String(error)}`;
+    }
+}
 const handler = async (event) => {
     if (!NEXT_PUBLIC_PRODUCTION_URL || !NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
         return {
@@ -222,6 +250,7 @@ const handler = async (event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs,
         decryptAICredentialsFn,
+        decryptAutopilotVerificationEnvs,
         AbortController,
         crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     };
@@ -287,6 +316,7 @@ const handler = async (event) => {
         decryptTwilioEnvs,
         freeEmailDomains,
         decryptAICredentialsFn,
+        decryptAutopilotVerificationEnvs,
         AbortController
       } = imports;
 
