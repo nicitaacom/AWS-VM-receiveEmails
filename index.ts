@@ -352,6 +352,7 @@ export const handler = async (event: Event) => {
     decryptTelegramEnvs,
     decryptTwilioEnvs,
     decryptAICredentialsFn,
+    AbortController,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
   }
 
@@ -434,7 +435,8 @@ export const handler = async (event: Event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs,
         freeEmailDomains,
-        decryptAICredentialsFn
+        decryptAICredentialsFn,
+        AbortController
       } = imports;
 
       (async () => {

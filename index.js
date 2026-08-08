@@ -222,6 +222,7 @@ const handler = async (event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs,
         decryptAICredentialsFn,
+        AbortController,
         crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
@@ -285,7 +286,8 @@ const handler = async (event) => {
         decryptTelegramEnvs,
         decryptTwilioEnvs,
         freeEmailDomains,
-        decryptAICredentialsFn
+        decryptAICredentialsFn,
+        AbortController
       } = imports;
 
       (async () => {
