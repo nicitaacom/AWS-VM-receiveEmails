@@ -218,6 +218,34 @@ async function decryptAutopilotVerificationEnvs(encryptedStr, provider) {
         return `Decryption failed (${provider}): ${error instanceof Error ? error.message : String(error)}`;
     }
 }
+async function decryptHunterApiKey(encryptedHunterApiKey) {
+    if (typeof window !== "undefined")
+        return "decryptHunterApiKey failed: this function must be run on the server.";
+    try {
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        const combined = buffer_1.Buffer.from(encryptedHunterApiKey, "base64");
+        const salt = combined.subarray(0, 16);
+        const iv = combined.subarray(16, 28);
+        const ciphertext = combined.subarray(28);
+        const secretKey = JSON.stringify({
+            secret: "redis",
+            provider: "hunter.io",
+            APIKey: "example-here",
+            route: "/",
+            reason: "hunter-api-key",
+        });
+        const importKeyResp = await crypto_1.default.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, [
+            "deriveKey",
+        ]);
+        const key = await crypto_1.default.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 350000, hash: "SHA-256" }, importKeyResp, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+        const decrypted = await crypto_1.default.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
+        return decoder.decode(decrypted);
+    }
+    catch (error) {
+        return `decryptHunterApiKey failed: ${error instanceof Error ? error.message : String(error)}`;
+    }
+}
 const handler = async (event) => {
     if (!NEXT_PUBLIC_PRODUCTION_URL || !NEXT_PUBLIC_PRODUCTION_AUTH_URL) {
         return {
@@ -252,6 +280,7 @@ const handler = async (event) => {
         decryptTwilioEnvs,
         decryptAICredentialsFn,
         decryptAutopilotVerificationEnvs,
+        decryptHunterApiKey,
         AbortController,
         clearTimeout,
         crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
@@ -319,6 +348,7 @@ const handler = async (event) => {
         freeEmailDomains,
         decryptAICredentialsFn,
         decryptAutopilotVerificationEnvs,
+        decryptHunterApiKey,
         clearTimeout,
         AbortController
       } = imports;

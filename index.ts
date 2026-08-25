@@ -344,6 +344,47 @@ export async function decryptAICredentialsFn(encryptedBase64: string): Promise<{
 
 
 
+async function decryptHunterApiKey(encryptedHunterApiKey: string): Promise<string> {
+  if (typeof window !== "undefined") return "decryptHunterApiKey failed: this function must be run on the server."
+  try {
+    const encoder = new TextEncoder()
+    const decoder = new TextDecoder()
+    const combined = Buffer.from(encryptedHunterApiKey, "base64")
+
+    const salt = combined.subarray(0, 16)
+    const iv = combined.subarray(16, 28)
+    const ciphertext = combined.subarray(28)
+
+    const secretKey = JSON.stringify({
+      secret: "redis",
+      provider: "hunter.io",
+      APIKey: "example-here",
+      route: "/",
+      reason: "hunter-api-key",
+    })
+
+    const importKeyResp = await crypto.subtle.importKey("raw", encoder.encode(secretKey), { name: "PBKDF2" }, false, [
+      "deriveKey",
+    ])
+    const key = await crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt, iterations: 350000, hash: "SHA-256" },
+      importKeyResp,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"],
+    )
+
+    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext)
+    return decoder.decode(decrypted)
+  } catch (error) {
+    return `decryptHunterApiKey failed: ${error instanceof Error ? error.message : String(error)}`
+  }
+}
+
+
+
+
+
 
 
 
@@ -394,6 +435,7 @@ export const handler = async (event: Event) => {
     decryptTwilioEnvs,
     decryptAICredentialsFn,
     decryptAutopilotVerificationEnvs,
+    decryptHunterApiKey,
     AbortController,
     clearTimeout,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
@@ -480,6 +522,7 @@ export const handler = async (event: Event) => {
         freeEmailDomains,
         decryptAICredentialsFn,
         decryptAutopilotVerificationEnvs,
+        decryptHunterApiKey,
         clearTimeout,
         AbortController
       } = imports;
