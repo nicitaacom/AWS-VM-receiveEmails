@@ -23,6 +23,7 @@ const crypto_1 = __importDefault(require("crypto"));
 // For freeEmailDomains - so I fetch from entiryRedis envs by correct userId (if sent from gmail cuz user.email domain might be ukr.net)
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
+const promises_1 = require("node:dns/promises");
 const NEXT_PUBLIC_PRODUCTION_URL = "https://www.outreach-tool.com/";
 const NEXT_PUBLIC_PRODUCTION_AUTH_URL = "https://auth.outreach-tool.com/";
 process.removeAllListeners("unhandledRejection");
@@ -283,7 +284,9 @@ const handler = async (event) => {
         decryptHunterApiKey,
         AbortController,
         clearTimeout,
-        crypto: crypto_1.default, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
+        crypto: crypto_1.default,
+        resolveMx: // this project only related (to random id if idName already exist - case 2 times justSentEmail)
+        promises_1.resolveMx, resolve4: promises_1.resolve4, resolve6: promises_1.resolve6
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -350,7 +353,8 @@ const handler = async (event) => {
         decryptAutopilotVerificationEnvs,
         decryptHunterApiKey,
         clearTimeout,
-        AbortController
+        AbortController,
+        resolveMx, resolve4, resolve6
       } = imports;
 
       (async () => {

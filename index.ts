@@ -25,6 +25,7 @@ import crypto from "crypto"
 // For freeEmailDomains - so I fetch from entiryRedis envs by correct userId (if sent from gmail cuz user.email domain might be ukr.net)
 import { readFileSync } from "fs"
 import path from "path"
+import { resolveMx, resolve4, resolve6 } from "node:dns/promises"
 
 
 
@@ -439,6 +440,7 @@ export const handler = async (event: Event) => {
     AbortController,
     clearTimeout,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
+    resolveMx, resolve4, resolve6
   }
 
 
@@ -524,7 +526,8 @@ export const handler = async (event: Event) => {
         decryptAutopilotVerificationEnvs,
         decryptHunterApiKey,
         clearTimeout,
-        AbortController
+        AbortController,
+        resolveMx, resolve4, resolve6
       } = imports;
 
       (async () => {
