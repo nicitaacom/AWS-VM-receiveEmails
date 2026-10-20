@@ -3,9 +3,9 @@ const { VM } = VMModule;
 
 
 import { Redis } from "ioredis";
-import { GetObjectCommand, DeleteObjectCommand,S3Client } from "@aws-sdk/client-s3"
-import { DeleteScheduleCommand, SchedulerClient, CreateScheduleCommand } from "@aws-sdk/client-scheduler"
-import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
+import { CreateBucketCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client } from "@aws-sdk/client-s3"
+import { CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
+import { SendEmailCommand, SendRawEmailCommand, SESClient } from "@aws-sdk/client-ses"
 
 import { createClient } from "@supabase/supabase-js"
 import PusherServer from "pusher"
@@ -25,7 +25,7 @@ import crypto from "crypto"
 // For freeEmailDomains - so I fetch from entiryRedis envs by correct userId (if sent from gmail cuz user.email domain might be ukr.net)
 import { readFileSync } from "fs"
 import path from "path"
-import { resolveMx, resolve4, resolve6 } from "node:dns/promises"
+import { resolveMx, resolveTxt, resolve4, resolve6 } from "node:dns/promises"
 
 
 
@@ -418,13 +418,12 @@ export const handler = async (event: Event) => {
 
   const imports = {
     Redis,
-    GetObjectCommand,
-    DeleteObjectCommand,
+    CreateBucketCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand,
     S3Client,
-    DeleteScheduleCommand,
+    CreateScheduleCommand, DeleteScheduleCommand,
     SchedulerClient,
-    SESClient, SendEmailCommand,
-    CreateScheduleCommand, // for autoreplies (it schedule email)
+    SendEmailCommand, SendRawEmailCommand,
+    SESClient,
     createClient,
     simpleParser,
     nanoid,
@@ -440,7 +439,7 @@ export const handler = async (event: Event) => {
     AbortController,
     clearTimeout,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
-    resolveMx, resolve4, resolve6
+    resolveMx, resolveTxt, resolve4, resolve6
   }
 
 
@@ -506,12 +505,9 @@ export const handler = async (event: Event) => {
       const { 
         Redis,
         GetObjectCommand,
-        DeleteObjectCommand,
-        S3Client,
-        DeleteScheduleCommand,
-        SchedulerClient,
-        SESClient, SendEmailCommand,
-        CreateScheduleCommand,
+        CreateBucketCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
+        CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
+        SendEmailCommand, SendRawEmailCommand, SESClient,
         createClient,
         simpleParser,
         nanoid,
@@ -527,7 +523,7 @@ export const handler = async (event: Event) => {
         decryptHunterApiKey,
         clearTimeout,
         AbortController,
-        resolveMx, resolve4, resolve6
+        resolveMx, resolveTxt, resolve4, resolve6
       } = imports;
 
       (async () => {

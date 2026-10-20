@@ -262,15 +262,11 @@ const handler = async (event) => {
         .filter(Boolean); // remove empty lines
     const imports = {
         Redis: ioredis_1.Redis,
-        GetObjectCommand: client_s3_1.GetObjectCommand,
-        DeleteObjectCommand: client_s3_1.DeleteObjectCommand,
+        CreateBucketCommand: client_s3_1.CreateBucketCommand, GetObjectCommand: client_s3_1.GetObjectCommand, DeleteObjectCommand: client_s3_1.DeleteObjectCommand, HeadObjectCommand: client_s3_1.HeadObjectCommand, PutPublicAccessBlockCommand: client_s3_1.PutPublicAccessBlockCommand,
         S3Client: client_s3_1.S3Client,
-        DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand,
-        SchedulerClient: client_scheduler_1.SchedulerClient,
-        SESClient: client_ses_1.SESClient, SendEmailCommand: client_ses_1.SendEmailCommand,
-        CreateScheduleCommand: client_scheduler_1.CreateScheduleCommand,
-        createClient: // for autoreplies (it schedule email)
-        supabase_js_1.createClient,
+        CreateScheduleCommand: client_scheduler_1.CreateScheduleCommand, DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand, SchedulerClient: client_scheduler_1.SchedulerClient,
+        SendEmailCommand: client_ses_1.SendEmailCommand, SendRawEmailCommand: client_ses_1.SendRawEmailCommand, SESClient: client_ses_1.SESClient,
+        createClient: supabase_js_1.createClient,
         simpleParser,
         nanoid: nanoid_1.nanoid,
         moment: moment_timezone_1.default,
@@ -286,7 +282,7 @@ const handler = async (event) => {
         clearTimeout,
         crypto: crypto_1.default,
         resolveMx: // this project only related (to random id if idName already exist - case 2 times justSentEmail)
-        promises_1.resolveMx, resolve4: promises_1.resolve4, resolve6: promises_1.resolve6
+        promises_1.resolveMx, resolveTxt: promises_1.resolveTxt, resolve4: promises_1.resolve4, resolve6: promises_1.resolve6
     };
     const response = await fetch(`${NEXT_PUBLIC_PRODUCTION_AUTH_URL}api/lambda/VM-receiveEmails`, {
         method: "POST",
@@ -333,12 +329,9 @@ const handler = async (event) => {
       const { 
         Redis,
         GetObjectCommand,
-        DeleteObjectCommand,
-        S3Client,
-        DeleteScheduleCommand,
-        SchedulerClient,
-        SESClient, SendEmailCommand,
-        CreateScheduleCommand,
+        CreateBucketCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
+        CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
+        SendEmailCommand, SendRawEmailCommand, SESClient,
         createClient,
         simpleParser,
         nanoid,
@@ -354,7 +347,7 @@ const handler = async (event) => {
         decryptHunterApiKey,
         clearTimeout,
         AbortController,
-        resolveMx, resolve4, resolve6
+        resolveMx, resolveTxt, resolve4, resolve6
       } = imports;
 
       (async () => {
