@@ -262,12 +262,9 @@ const handler = async (event) => {
         .filter(Boolean); // remove empty lines
     const imports = {
         Redis: ioredis_1.Redis,
-        CreateBucketCommand: client_s3_1.CreateBucketCommand, HeadBucketCommand: client_s3_1.HeadBucketCommand, GetObjectCommand: client_s3_1.GetObjectCommand, DeleteObjectCommand: client_s3_1.DeleteObjectCommand, HeadObjectCommand: client_s3_1.HeadObjectCommand, PutPublicAccessBlockCommand: client_s3_1.PutPublicAccessBlockCommand,
-        S3Client: client_s3_1.S3Client,
-        CreateScheduleCommand: client_scheduler_1.CreateScheduleCommand, DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand,
-        SchedulerClient: client_scheduler_1.SchedulerClient,
-        SendEmailCommand: client_ses_1.SendEmailCommand, SendRawEmailCommand: client_ses_1.SendRawEmailCommand,
-        SESClient: client_ses_1.SESClient,
+        CreateBucketCommand: client_s3_1.CreateBucketCommand, HeadBucketCommand: client_s3_1.HeadBucketCommand, GetObjectCommand: client_s3_1.GetObjectCommand, PutObjectCommand: client_s3_1.PutObjectCommand, DeleteObjectCommand: client_s3_1.DeleteObjectCommand, HeadObjectCommand: client_s3_1.HeadObjectCommand, PutPublicAccessBlockCommand: client_s3_1.PutPublicAccessBlockCommand, S3Client: client_s3_1.S3Client,
+        CreateScheduleCommand: client_scheduler_1.CreateScheduleCommand, DeleteScheduleCommand: client_scheduler_1.DeleteScheduleCommand, SchedulerClient: client_scheduler_1.SchedulerClient,
+        SendEmailCommand: client_ses_1.SendEmailCommand, SendRawEmailCommand: client_ses_1.SendRawEmailCommand, SESClient: client_ses_1.SESClient,
         createClient: supabase_js_1.createClient,
         simpleParser,
         nanoid: nanoid_1.nanoid,
@@ -331,7 +328,7 @@ const handler = async (event) => {
       const { 
         Redis,
         GetObjectCommand,
-        CreateBucketCommand, HeadBucketCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
+        CreateBucketCommand, HeadBucketCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
         CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
         SendEmailCommand, SendRawEmailCommand, SESClient,
         createClient,

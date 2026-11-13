@@ -3,7 +3,7 @@ const { VM } = VMModule;
 
 
 import { Redis } from "ioredis";
-import { CreateBucketCommand, HeadBucketCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client } from "@aws-sdk/client-s3"
+import { CreateBucketCommand, HeadBucketCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client } from "@aws-sdk/client-s3"
 import { CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient } from "@aws-sdk/client-scheduler"
 import { SendEmailCommand, SendRawEmailCommand, SESClient } from "@aws-sdk/client-ses"
 
@@ -418,12 +418,9 @@ export const handler = async (event: Event) => {
 
   const imports = {
     Redis,
-    CreateBucketCommand, HeadBucketCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand,
-    S3Client,
-    CreateScheduleCommand, DeleteScheduleCommand,
-    SchedulerClient,
-    SendEmailCommand, SendRawEmailCommand,
-    SESClient,
+    CreateBucketCommand, HeadBucketCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
+    CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
+    SendEmailCommand, SendRawEmailCommand, SESClient,
     createClient,
     simpleParser,
     nanoid,
@@ -505,7 +502,7 @@ export const handler = async (event: Event) => {
       const { 
         Redis,
         GetObjectCommand,
-        CreateBucketCommand, HeadBucketCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
+        CreateBucketCommand, HeadBucketCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
         CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
         SendEmailCommand, SendRawEmailCommand, SESClient,
         createClient,
