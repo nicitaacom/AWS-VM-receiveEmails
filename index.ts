@@ -501,7 +501,6 @@ export const handler = async (event: Event) => {
     const wrappedCode = `  
       const { 
         Redis,
-        GetObjectCommand,
         CreateBucketCommand, HeadBucketCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
         CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
         SendEmailCommand, SendRawEmailCommand, SESClient,
@@ -562,7 +561,7 @@ export const handler = async (event: Event) => {
           await vm.run(`(async () => { ${debugCode} })()`)
         } catch (debugErr:unknown) {
           const debugMessage = debugErr instanceof Error ? debugErr.message : String(debugErr)
-          console.log(250, 'debug send failed too:', debugMessage)
+          console.log(565, 'debug send failed too:', debugMessage)
         }
       }
 

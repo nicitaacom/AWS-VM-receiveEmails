@@ -327,7 +327,6 @@ const handler = async (event) => {
     const wrappedCode = `  
       const { 
         Redis,
-        GetObjectCommand,
         CreateBucketCommand, HeadBucketCommand, GetObjectCommand, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand, PutPublicAccessBlockCommand, S3Client,
         CreateScheduleCommand, DeleteScheduleCommand, SchedulerClient,
         SendEmailCommand, SendRawEmailCommand, SESClient,
@@ -383,7 +382,7 @@ const handler = async (event) => {
             }
             catch (debugErr) {
                 const debugMessage = debugErr instanceof Error ? debugErr.message : String(debugErr);
-                console.log(250, 'debug send failed too:', debugMessage);
+                console.log(565, 'debug send failed too:', debugMessage);
             }
         }
         return { statusCode: 500, body: { error: errMsg } };
