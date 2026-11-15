@@ -434,6 +434,7 @@ export const handler = async (event: Event) => {
     decryptAutopilotVerificationEnvs,
     decryptHunterApiKey,
     AbortController,
+    URL,
     clearTimeout,
     crypto, // this project only related (to random id if idName already exist - case 2 times justSentEmail)
     resolveMx, resolveTxt, resolve4, resolve6
@@ -519,6 +520,7 @@ export const handler = async (event: Event) => {
         decryptHunterApiKey,
         clearTimeout,
         AbortController,
+        URL,
         resolveMx, resolveTxt, resolve4, resolve6
       } = imports;
 
